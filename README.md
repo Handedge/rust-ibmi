@@ -100,7 +100,7 @@ Notes:
 - cargo may print `warning: failed to connect to jobserver ... (os error 22)`: harmless under PASE.
 - Tested on IBM i 7.5 (Power9, 2 cores) with Rust 1.96 (AIX Toolbox) and Rust 1.98 (IBM SDK archive):
   installation in 1 to 4.5 minutes; `examples/hello-web` (tokio + axum, dependencies fetched from
-  crates.io) built in 2.5 minutes and served `GET /hello`. IBM i 7.3 and 7.4 are not supported.
+  crates.io) built in 2.5 minutes and served `GET /hello`. IBM i 7.4 and earlier are not supported: the installer refuses them.
 
 Rust on IBM i is also how [deno-ibmi](https://github.com/Handedge/deno-ibmi) runs Deno on IBM i.
 

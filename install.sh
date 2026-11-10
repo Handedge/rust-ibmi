@@ -52,7 +52,9 @@ LEVEL="$(uname -v).$(uname -r)"
 echo "  IBM i $LEVEL"
 case $LEVEL in
   7.[5-9]|[89].*) ;;
-  *) echo "  WARNING: only IBM i 7.5 and later have been tested" ;;
+  *) echo "ERROR: IBM i 7.5 or later is required (IBM supports its Rust SDK on IBM i 7.5 PASE and"
+     echo "       later only; 7.4 and earlier are not supported)"
+     exit 1 ;;
 esac
 [ -f "$RTE" ] || [ -d "$RTE" ] || { echo "ERROR: Open XL runtime not found: $RTE"; exit 1; }
 [ -z "$SDK" ] || [ -f "$SDK" ] || { echo "ERROR: SDK archive not found: $SDK"; exit 1; }
