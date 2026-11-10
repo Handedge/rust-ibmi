@@ -1,0 +1,32 @@
+/* LSTTABRS: lists the tables of a schema through a Rust program (PASE)            */
+/* Flow: the CL creates QTEMP/RUSTTABLES -> QP2SHELL runs the Rust program, which  */
+/* reads Db2 and fills QTEMP (same job) -> the CL shows the result (RUNQRY if      */
+/* interactive). Call: CALL RUSTDEMO/LSTTABRS PARM('QSYS2')                        */
+             PGM        PARM(&SCHEMA)
+             DCL        VAR(&SCHEMA) TYPE(*CHAR) LEN(10)
+             DCL        VAR(&NUL) TYPE(*CHAR) LEN(1) VALUE(X'00')
+             DCL        VAR(&PROG) TYPE(*CHAR) LEN(64)
+             DCL        VAR(&ARG1) TYPE(*CHAR) LEN(11)
+             DCL        VAR(&ARG2) TYPE(*CHAR) LEN(3)
+             DCL        VAR(&TYPE) TYPE(*CHAR) LEN(1)
+
+/* The work table, in QTEMP, in UTF-8                                              */
+             RUNSQL     SQL('CREATE OR REPLACE TABLE QTEMP.RUSTTABLES +
+                          (NOM VARCHAR(128) CCSID 1208, GENRE VARCHAR(10) +
+                          CCSID 1208, TEXTE VARCHAR(100) CCSID 1208, +
+                          LONGUEUR INTEGER)') COMMIT(*NONE)
+
+/* QP2SHELL expects null-terminated strings                                        */
+             CHGVAR     VAR(&PROG) VALUE('/home/MONPROFIL/rust-db2/rust-db2' +
+                          *TCAT &NUL)
+             CHGVAR     VAR(&ARG1) VALUE(&SCHEMA *TCAT &NUL)
+             CHGVAR     VAR(&ARG2) VALUE('10' *TCAT &NUL)
+             CALL       PGM(QSYS/QP2SHELL) PARM(&PROG &ARG1 &ARG2)
+
+/* Interactive: display it; in batch, the result stays in QTEMP/RUSTTABLES         */
+             RTVJOBA    TYPE(&TYPE)
+             IF         COND(&TYPE *EQ '1') THEN(DO)
+             RUNQRY     QRY(*NONE) QRYFILE((QTEMP/RUSTTABLES))
+             ENDDO
+
+             ENDPGM

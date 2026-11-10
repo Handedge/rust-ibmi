@@ -1,0 +1,10 @@
+[package]
+name = "hello-web"
+version = "0.1.0"
+edition = "2024"
+description = "Example: a tokio + axum web service served by IBM i (PASE)"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+axum = "0.8"
+serde_json = "1"

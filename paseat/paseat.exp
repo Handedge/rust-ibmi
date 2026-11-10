@@ -1,0 +1,15 @@
+openat
+openat64
+fstatat
+fstatat64
+unlinkat
+mkdirat
+renameat
+linkat
+symlinkat
+readlinkat
+fchmodat
+fchownat
+faccessat
+fcntl
+read

@@ -1,0 +1,20 @@
+# Rust environment under IBM i PASE (written by rust-ibmi install.sh). To be sourced:
+#   . @PREFIX@/rustenv.sh
+export PATH=@PREFIX@/current/bin:/QOpenSys/pkgs/bin:/QOpenSys/usr/bin:/usr/bin
+export CARGO_HOME=@PREFIX@/cargo
+export SSL_CERT_FILE=@PREFIX@/ca-bundle.pem
+# threads and DNS: the job must be multithread capable (ssh, or SBMJOB ... ALWMLTTHD(*YES))
+export QIBM_MULTI_THREADED=Y
+export OBJECT_MODE=64
+# Linking: libpaseat before libc (PASE *at() calls), Open XL runtime (libunwind, libc++) and yum
+# libraries found at run time through the library search path written into each program
+export RUSTFLAGS="-L @PREFIX@/runtime -l paseat -C link-arg=-blibpath:@PREFIX@/runtime:/QOpenSys/pkgs/lib:/usr/lib:/lib"
+# cargo calls the IBM binaries directly (bypassing the ksh wrapper scripts, fragile under load)
+export RUSTC=@PREFIX@/current/bin/.rustc.orig
+export RUSTDOC=@PREFIX@/current/bin/.rustdoc.orig
+# runtime-tools: libz and libatomic of yum in archive(member) format, for rustc and cargo only
+# (outside -L, so that crates linking zlib statically do not pick them up)
+export LIBPATH=@PREFIX@/runtime:@PREFIX@/runtime-tools:/QOpenSys/pkgs/lib:@PREFIX@/current/lib
+export MALLOCMULTIHEAP=1
+export AIXTHREAD_STK=4194304
+export CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS:-2}
