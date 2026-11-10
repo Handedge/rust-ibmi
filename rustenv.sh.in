@@ -8,7 +8,7 @@ export QIBM_MULTI_THREADED=Y
 export OBJECT_MODE=64
 # Linking: libpaseat before libc (PASE *at() calls), Open XL runtime (libunwind, libc++) and yum
 # libraries found at run time through the library search path written into each program
-export RUSTFLAGS="-L @PREFIX@/runtime -l paseat -C link-arg=-blibpath:@PREFIX@/runtime:/QOpenSys/pkgs/lib:/usr/lib:/lib"
+export RUSTFLAGS="-C linker=@PREFIX@/bin/ld-pase -L @PREFIX@/runtime -l paseat -C link-arg=-blibpath:@PREFIX@/runtime:/QOpenSys/pkgs/lib:/usr/lib:/lib"
 # cargo calls the IBM binaries directly (bypassing the ksh wrapper scripts, fragile under load)
 export RUSTC=@PREFIX@/current/bin/.rustc.orig
 export RUSTDOC=@PREFIX@/current/bin/.rustdoc.orig

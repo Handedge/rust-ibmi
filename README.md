@@ -24,6 +24,7 @@ breaks parts of the Rust standard library:
 | the Open XL C/C++ runtime (`libc++`, `libunwind`) is an AIX installp fileset | rustc and every Rust program fail to load | extracted next to the toolchain, never into `/QOpenSys/usr/lib` |
 | cargo is linked against the AIX OpenSSL | two libcrypto instances, TLS failures | cargo's import table rewritten to the OpenSSL of yum |
 | `cert.pem` is sometimes empty | `cargo` cannot reach crates.io | CA bundle built from the yum certificates |
+| the PASE `ld` rejects `-bdbg:namedsects:ss`, passed by rustc 1.98 and later | every link fails (`0711-151 SETOPT: Invalid option name`) | `ld-pase` wrapper that drops this option |
 
 libpaseat is linked **before** libc (`-l paseat` in `RUSTFLAGS`): the AIX linker then binds these
 symbols to it. It is a small C library (`paseat/paseat.c`), built on your machine by the installer.
@@ -47,11 +48,21 @@ git clone https://github.com/Handedge/rust-ibmi.git && cd rust-ibmi
 sh install.sh /home/ME/IBM_OPEN_XL_CPP_RUNTIME_17.1.4.2_AIX.tar.Z
 ```
 
-Options: `-p PREFIX` (default `/QOpenSys/opt/rust`), `-v VERSION` (default: the most recent Rust in the
-AIX Toolbox, 1.96 today). The runtime argument can also be a directory that already holds `libc++.a`,
-`libc++abi.a` and `libunwind.a`. The installer downloads the SDK packages from the IBM AIX Toolbox,
-extracts them **without** going through the IBM i rpm database, then applies the PASE adaptations.
-It ends by compiling and running a `remove_dir_all` test.
+The installer first shows the IBM license terms that apply (the SDK is licensed by IBM, not by this
+project) and asks you to type `yes`; for an unattended installation, add `--accept-license` (or `-y`).
+It then downloads the SDK packages from the IBM AIX Toolbox, extracts them **without** going through the
+IBM i rpm database, applies the PASE adaptations, and ends by compiling and running a `remove_dir_all`
+test.
+
+Options:
+
+- `-p PREFIX`: installation directory (default `/QOpenSys/opt/rust`).
+- `-v VERSION`: Rust version from the AIX Toolbox (default: the most recent one, 1.96 today).
+- `-s SDK`: install from the SDK archive you downloaded from IBM instead of the AIX Toolbox, e.g.
+  `IBM_OPEN_SDK_FOR_RUST_COMMUNITY_1.98.0_AIX.tar.Z` (IBM's download site often has a newer version
+  than the Toolbox).
+- The runtime argument can also be a directory that already holds `libc++.a`, `libc++abi.a` and
+  `libunwind.a`.
 
 | Installed | Path |
 |---|---|
@@ -87,9 +98,9 @@ Notes:
   (`PREFIX/current/README`). Most of the ecosystem does: libc, tokio, mio, socket2, rustix, nix…
 - No LTO, 64-bit only (IBM SDK limitations).
 - cargo may print `warning: failed to connect to jobserver ... (os error 22)`: harmless under PASE.
-- Tested on IBM i 7.5 (Power9, 2 cores): installation in 4.5 minutes; `examples/hello-web`
-  (tokio + axum, dependencies fetched from crates.io) built in 2.5 minutes and served `GET /hello`.
-  IBM i 7.3 and 7.4 are not supported.
+- Tested on IBM i 7.5 (Power9, 2 cores) with Rust 1.96 (AIX Toolbox) and Rust 1.98 (IBM SDK archive):
+  installation in 1 to 4.5 minutes; `examples/hello-web` (tokio + axum, dependencies fetched from
+  crates.io) built in 2.5 minutes and served `GET /hello`. IBM i 7.3 and 7.4 are not supported.
 
 Rust on IBM i is also how [deno-ibmi](https://github.com/Handedge/deno-ibmi) runs Deno on IBM i.
 
@@ -105,8 +116,11 @@ trademarks of International Business Machines Corporation. They are used only to
 project works with.
 
 **IBM software is not distributed here.** The IBM Open SDK for Rust on AIX and the IBM Open XL C/C++
-runtime are downloaded by the installer or by you, from IBM, and used under IBM's license terms
-(`PREFIX/current/LicenseAgreement.pdf`, `license.pdf`). By running the installer you accept them.
+runtime are downloaded by the installer or by you, from IBM, and used under IBM's license terms: the
+IBM License Information of the program and the International License Agreement for Non-Warranted
+Programs (texts in `PREFIX/current/`: `LicenseAgreement.pdf`, `license.pdf`, `non_ibm_license*.htm`).
+The installer asks you to accept them before installing anything. These terms do not allow the SDK to
+be redistributed, which is why this project ships an installer and not a Rust package.
 
 ## License
 
